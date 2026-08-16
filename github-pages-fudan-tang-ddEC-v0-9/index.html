@@ -383,7 +383,7 @@ document.querySelectorAll('.backSpecial').forEach(button=>button.onclick=()=>{
   q('#toConsent').onclick=()=>go('consent');q('#consentBack').onclick=()=>go('verify');
   const unlockConsent=()=>{q('#consentA').disabled=false;q('#consentB').disabled=false;};
   q('#consentCopy').addEventListener('scroll',()=>{const box=q('#consentCopy');if(box.scrollTop+box.clientHeight>=box.scrollHeight-8)unlockConsent();});
-  setTimeout(unlockConsent,1000);
+  setTimeout(()=>{const box=q('#consentCopy');if(box.scrollHeight<=box.clientHeight+2)unlockConsent();},0);
   const checkConsent=()=>q('#toScheme').disabled=!(q('#consentA').checked&&q('#consentB').checked);
   q('#consentA').onchange=checkConsent;q('#consentB').onchange=checkConsent;q('#toScheme').onclick=()=>go('scheme');q('#schemeBack').onclick=()=>go('consent');
   qa('.scheme').forEach(button=>button.onclick=()=>{const name=button.dataset.scheme;if(name!=='ddEC'){q('#schemeTip').textContent='“'+name+'”专项陪伴筹备中，第一阶段请选 ddEC。';return;}selectedScheme='ddEC';qa('.scheme').forEach(b=>b.classList.toggle('selected',b===button));q('#schemeTip').textContent='已选择 ddEC：每14天一个周期，共4个周期。本演示进入第1周期 D6。';q('#enterSpecial').disabled=false;});

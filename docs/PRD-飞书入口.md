@@ -2,6 +2,6 @@
 
 - 飞书 PRD：[汤立晨主任乳腺癌综合治疗陪伴 Demo｜开发设计](https://p130box8iy5.feishu.cn/docx/OdnFd4EqRopgWWxiKE6c6nyNnWh)
 - 文档 Token：`OdnFd4EqRopgWWxiKE6c6nyNnWh`
-- 最近确认版本：revision 57（2026-08-18，v1.0.2 逐组症状话术与关怀承接已同步）
+- 最近确认版本：revision 58（2026-08-18，v1.0.2 已发布并同步 GitHub Pages 链接）
 
 飞书 PRD 是产品需求与临床规则的主文档。开发前先核对其中的版本；实现变更完成后同步更新飞书并记录 Git 提交号。

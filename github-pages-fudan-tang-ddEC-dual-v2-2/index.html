@@ -215,7 +215,7 @@
       $('#selfChief').value=[session.base,...session.parts.filter(Boolean)].filter(Boolean).join('，');
       applyChiefDescription();$('#chiefStatus').textContent=pending?`正在识别：${pending}`:'已写入描述，可继续说，或点击结束录音。';
     };
-    r.onerror=e=>{if(chiefSession!==session)return;session.failed=true;$('#chiefStatus').textContent=e.error==='not-allowed'?'麦克风未获允许，可在浏览器设置中开启，或直接打字。':e.error==='no-speech'?'没有听清，请重试或直接打字。':'语音识别暂不可用，已识别内容已保存，您可以继续打字。'};
+    r.onerror=e=>{if(chiefSession!==session)return;session.failed=true;$('#chiefStatus').textContent=recognitionError(e.error).replaceAll('开始说话','语音输入')};
     r.onend=()=>{if(chiefSession!==session)return;chiefRecognition=null;chiefSession=null;$('#chiefMic').setAttribute('aria-pressed','false');$('#chiefMic span').textContent='语音输入';if(!session.failed)$('#chiefStatus').textContent=session.received?'语音已转成文字，请核对下方选项。':'没有听到内容，可以重新录音或打字。'};
     try{r.start()}catch{r.onerror({error:'start-failed'});r.onend()}
   }
@@ -343,7 +343,7 @@
     $('#consentCopy').scrollTop=0;$('#toScheme').disabled=true;$$('.scheme').forEach(button=>button.classList.remove('selected'));$('#startDdec').disabled=true;
     $('#schemeTip').textContent='请选择 ddEC 后继续选择您更习惯的随访方式。';$('#selfForm').reset();updateHome();show('verify');toast('演示已重置，请从实名认证开始。');
   }
-  $('#menu').onclick=()=>{$('#drawerLayer').classList.add('show');$('#drawerLayer').setAttribute('aria-hidden','false')};$('#drawerClose').onclick=()=>{$('#drawerLayer').classList.remove('show')};$('#drawerLayer').onclick=e=>{if(e.target===$('#drawerLayer'))$('#drawerLayer').classList.remove('show')};$('#vipEntry').onclick=()=>{$('#drawerLayer').classList.remove('show');show(state.onboarded?'special':'verify')};$('#resetDemo').onclick=reset;$('#homeAlert').onclick=()=>state.onboarded?enterSpecial(!state.voiceDone):show('verify');$('#homeGoSpecial').onclick=()=>enterSpecial(false);$('.backHome').onclick=()=>show('home');$('#backVerify').onclick=()=>show('verify');$('#backConsent').onclick=()=>show('consent');$('#backHome').onclick=()=>show('home');$('#toConsent').onclick=()=>{if(!$('#realName').value.trim()){toast('请填写演示姓名。');return}show('consent')};$('#female').onclick=()=>{$('#female').classList.add('selected');$('#male').classList.remove('selected')};$('#male').onclick=()=>{$('#male').classList.add('selected');$('#female').classList.remove('selected')};$('#consentCopy').addEventListener('scroll',e=>{if(e.target.scrollTop+e.target.clientHeight>=e.target.scrollHeight-5){$('#checkRead').disabled=false;$('#checkSensitive').disabled=false}});function consentReady(){return $('#checkRead').checked&&$('#checkSensitive').checked}$('#checkRead').onchange=$('#checkSensitive').onchange=()=>$('#toScheme').disabled=!consentReady();$('#toScheme').onclick=()=>show('scheme');$$('.scheme').forEach(b=>b.onclick=()=>{if(b.dataset.scheme!=='ddEC'){ $('#schemeTip').textContent='“'+b.textContent.trim().split('\n')[0]+'”专项陪伴筹备中，第一阶段请选 ddEC。';return}$$('.scheme').forEach(x=>x.classList.toggle('selected',x===b));$('#schemeTip').textContent='已选择 ddEC：每 14 天一个周期，共 4 个周期。进入后将自动接入 D6 语音随访。';$('#startDdec').disabled=false});$('#startDdec').onclick=()=>{state.onboarded=true;state.selectedDay='D6';save();updateHome();enterSpecial(true)};$('#bannerAudio').onclick=()=>speak('陈女士，今天是第六天血常规复查日。请先完成报告上传，再接听逐题语音随访。');$('#freeAsk').onclick=()=>show('chat');$('#openWorkbench').onclick=()=>show('workbench');$('#pickFile').onclick=()=>$('#file').click();$('#file').onchange=e=>{if(e.target.files[0])upload(e.target.files[0].name)};$('#mockFile').onclick=()=>upload(uploadMode==='rash'?'模拟皮疹照片.png':'模拟血常规报告.png');$('#returnAfterUpload').onclick=()=>show('special');$$('.toSpecial').forEach(b=>b.onclick=()=>show('special'));$('#promptLater').onclick=()=>{closeFollowupPrompt();showSummary()};$('#voiceListen').onclick=()=>voiceToText(respond);$('#voiceHang').onclick=()=>{if(flow?.kind==='care'){endCareCall();return}if(flow?.finished){closeVoice();showFollowupPrompt()}else if(flow?.cancelled||confirm('结束后本次未完成的随访不会生成总结卡。'))closeVoice()};$('#manualSend').onclick=()=>{const i=$('#manualAnswer');respond(i.value);i.value='';$('#voiceInput').hidden=true};$('#manualAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')$('#manualSend').click()});$('#summaryBack').onclick=closeSummary;$('#summarySend').onclick=()=>{state.summarySent=true;save();toast('今日总结已回传汤主任团队工作台。');showSummary();renderSpecial();updateHome()};$('#chatSend').onclick=sendChat;$('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});$('#chatMic').onclick=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast('当前浏览器不支持实时语音识别。');return}const r=new R();r.lang='zh-CN';r.onresult=e=>{$('#chatInput').value=e.results[0][0].transcript;sendChat()};r.onerror=()=>toast('语音识别失败，请检查麦克风权限。');r.start()};$('#homeSend').onclick=()=>{const t=$('#homeInput').value.trim();if(t){show('chat');$('#chatInput').value=t;sendChat()}};$('#homeMic').onclick=()=>{show('chat');$('#chatMic').click()};$$('[data-question]').forEach(b=>b.onclick=()=>{show('chat');$('#chatInput').value=b.dataset.question;sendChat()});updateHome();if(state.onboarded)renderSpecial();
+  $('#menu').onclick=()=>{$('#drawerLayer').classList.add('show');$('#drawerLayer').setAttribute('aria-hidden','false')};$('#drawerClose').onclick=()=>{$('#drawerLayer').classList.remove('show')};$('#drawerLayer').onclick=e=>{if(e.target===$('#drawerLayer'))$('#drawerLayer').classList.remove('show')};$('#vipEntry').onclick=()=>{$('#drawerLayer').classList.remove('show');show(state.onboarded?'special':'verify')};$('#resetDemo').onclick=reset;$('#homeAlert').onclick=()=>state.onboarded?enterSpecial(!state.voiceDone):show('verify');$('#homeGoSpecial').onclick=()=>enterSpecial(false);$('.backHome').onclick=()=>show('home');$('#backVerify').onclick=()=>show('verify');$('#backConsent').onclick=()=>show('consent');$('#backHome').onclick=()=>show('home');$('#toConsent').onclick=()=>{if(!$('#realName').value.trim()){toast('请填写演示姓名。');return}show('consent')};$('#female').onclick=()=>{$('#female').classList.add('selected');$('#male').classList.remove('selected')};$('#male').onclick=()=>{$('#male').classList.add('selected');$('#female').classList.remove('selected')};$('#consentCopy').addEventListener('scroll',e=>{if(e.target.scrollTop+e.target.clientHeight>=e.target.scrollHeight-5){$('#checkRead').disabled=false;$('#checkSensitive').disabled=false}});function consentReady(){return $('#checkRead').checked&&$('#checkSensitive').checked}$('#checkRead').onchange=$('#checkSensitive').onchange=()=>$('#toScheme').disabled=!consentReady();$('#toScheme').onclick=()=>show('scheme');$$('.scheme').forEach(b=>b.onclick=()=>{if(b.dataset.scheme!=='ddEC'){ $('#schemeTip').textContent='“'+b.textContent.trim().split('\n')[0]+'”专项陪伴筹备中，第一阶段请选 ddEC。';return}$$('.scheme').forEach(x=>x.classList.toggle('selected',x===b));$('#schemeTip').textContent='已选择 ddEC：每 14 天一个周期，共 4 个周期。进入后将自动接入 D6 语音随访。';$('#startDdec').disabled=false});$('#startDdec').onclick=()=>{state.onboarded=true;state.selectedDay='D6';save();updateHome();enterSpecial(true)};$('#bannerAudio').onclick=()=>speak('陈女士，今天是第六天血常规复查日。请先完成报告上传，再接听逐题语音随访。');$('#freeAsk').onclick=()=>show('chat');$('#openWorkbench').onclick=()=>show('workbench');$('#pickFile').onclick=()=>$('#file').click();$('#file').onchange=e=>{if(e.target.files[0])upload(e.target.files[0].name)};$('#mockFile').onclick=()=>upload(uploadMode==='rash'?'模拟皮疹照片.png':'模拟血常规报告.png');$('#returnAfterUpload').onclick=()=>show('special');$$('.toSpecial').forEach(b=>b.onclick=()=>show('special'));$('#promptLater').onclick=()=>{closeFollowupPrompt();showSummary()};$('#voiceListen').onclick=()=>voiceToText(respond);$('#voiceHang').onclick=()=>{if(flow?.kind==='care'){endCareCall();return}if(flow?.finished){closeVoice();showFollowupPrompt()}else if(flow?.cancelled||confirm('结束后本次未完成的随访不会生成总结卡。'))closeVoice()};$('#manualSend').onclick=()=>{const i=$('#manualAnswer');respond(i.value);i.value='';$('#voiceInput').hidden=true};$('#manualAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')$('#manualSend').click()});$('#summaryBack').onclick=closeSummary;$('#summarySend').onclick=()=>{state.summarySent=true;save();toast('今日总结已回传汤主任团队工作台。');showSummary();renderSpecial();updateHome()};$('#chatSend').onclick=sendChat;$('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});$('#chatMic').onclick=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast('当前浏览器不支持实时语音识别。');return}const r=new R();r.lang='zh-CN';r.onresult=e=>{$('#chatInput').value=e.results[0][0].transcript;sendChat()};r.onerror=e=>toast(recognitionError(e.error).replaceAll('开始说话','语音提问'));try{r.start()}catch(e){toast(recognitionError(e.name==='NotAllowedError'?'not-allowed':'start-failed'))}};$('#homeSend').onclick=()=>{const t=$('#homeInput').value.trim();if(t){show('chat');$('#chatInput').value=t;sendChat()}};$('#homeMic').onclick=()=>{show('chat');$('#chatMic').click()};$$('[data-question]').forEach(b=>b.onclick=()=>{show('chat');$('#chatInput').value=b.dataset.question;sendChat()});updateHome();if(state.onboarded)renderSpecial();
   $('#voiceListen').onclick=()=>{if(!flow)return;if(flow.kind==='care'){askCare();return}if(flow.finished){speak($('#voiceQuestion').textContent,()=>{closeVoice();showFollowupPrompt()});return}flow.live=true;ask()};
   $('#toConsent').onclick=()=>{if(!$('#realName').value.trim()){toast('请填写演示姓名。');return}if(!$('#callWindow').value){toast('请选择方便接听电话的时段。');return}state.callWindow=$('#callWindow').value;save();show('consent')};
   $('#openJourney').onclick=()=>{show('journey');$('#backJourney').setAttribute('aria-label','返回专项');$('#backJourney').onclick=()=>show('special')};
@@ -391,12 +391,12 @@
   // Call-scoped transitions: camera and playback cannot advance a closed or paused call.
   let callClock=null, camera=null, noticeTimer=null;
   const priorOpenVoice=openVoice, priorCloseVoice=closeVoice, priorAsk=ask, priorRespond=respond, priorActiveQuestions=activeQuestions;
-  function stopCallRecognition(){if(rec){rec.onresult=rec.onerror=rec.onend=null;try{rec.abort()}catch{}rec=null}}
+  function stopCallRecognition(){if(rec){rec._clearTimer?.();rec.onstart=rec.onresult=rec.onerror=rec.onend=null;try{rec.abort()}catch{}rec=null}}
   function phase(text){$('#callPhase').textContent=text}
   function callButtons(){if(!flow)return;$('#callMic').setAttribute('aria-pressed',String(flow.mic));$('#callMic .control-label').textContent=flow.mic?'麦克风已开':'麦克风已关';$('#callSpeaker').setAttribute('aria-pressed',String(!flow.silent));$('#callSpeaker .control-label').textContent=flow.silent?'声音已关':'扬声器';$('#callPause .control-label').textContent=flow.paused?'继续':'暂停';$('#callPause').setAttribute('aria-pressed',String(!!flow.paused));$('#voiceLayer').classList.toggle('is-paused',!!flow.paused)}
   openVoice=function(kind='followup'){
     priorOpenVoice(kind);if(!flow)return;
-    Object.assign(flow,{startedAt:Date.now(),mic:false,silent:false,paused:false,uploads:[],pendingContinue:null});
+    Object.assign(flow,{startedAt:Date.now(),mic:true,silent:false,paused:false,uploads:[],pendingContinue:null});
     camera=null;$('#callCamera').hidden=true;$('#callNotesPanel').hidden=true;$('#callMorePanel').hidden=true;$('#callRestore').hidden=true;$('#voiceLayer').classList.remove('minimized','is-paused');$('#callTime').textContent='00:00';callButtons();
     clearInterval(callClock);callClock=setInterval(()=>{if(!flow)return;const seconds=Math.floor((Date.now()-flow.startedAt)/1000);$('#callTime').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')},1000);
   };
@@ -409,17 +409,41 @@
     if(call?.silent){$('#voiceQuestion').textContent=text;$('#voiceQuestion').hidden=false;return new Promise(resolve=>setTimeout(()=>{if(flow===call){if(call.paused)call.pendingContinue=after;else after?.()}resolve(true)},800))}
     return originalSpeak(text,()=>{if(call&&flow===call&&call.paused)call.pendingContinue=after;else after?.()});
   };
+  function recognitionError(error){
+    const messages={
+      'not-allowed':'麦克风或语音识别未获授权。请允许此网站使用麦克风，再点击“开始说话”。Safari 还需允许系统语音识别。',
+      'service-not-allowed':'浏览器的语音识别服务未获允许。Safari 请检查系统的语音识别权限，以及 Siri 或听写是否可用。',
+      'audio-capture':'未能获取麦克风，请检查麦克风设备是否可用或被其他应用占用。',
+      'network':'语音识别服务连接失败，请检查网络后点击“开始说话”重试。',
+      'no-speech':'暂时没有听到声音，请点击“开始说话”后再回答。',
+      'language-not-supported':'当前语音识别服务不支持中文，请检查系统听写语言设置。',
+      'unsupported':'当前浏览器未提供语音识别功能，请使用 Safari 或 Chrome 打开，或输入回答。',
+      'aborted':'语音识别已停止，可点击“开始说话”重试。',
+      'timeout':'语音识别没有响应，请点击“开始说话”重新启动，或检查浏览器与系统的麦克风权限。'
+    };
+    return messages[error]||'语音识别未能启动，请点击“开始说话”重试，或输入回答。';
+  }
   voiceToText=function(done){
-    if(!flow||flow.paused||camera)return;
-    phase('正在倾听…');$('#voiceLayer').dataset.phase='listening';$('#voiceQuestion').hidden=false;
-    $('#voiceInput').hidden=false;$('#voiceListen').hidden=false;$('#voiceListen').style.display='none';$('#voiceStatus').textContent=flow.mic?'您可以直接说话，也可以输入回答':'点击麦克风说话，或在下方输入回答';
-    if(!flow.mic)return;
+    if(!flow||flow.paused||flow.finished||flow.cancelled||camera)return;
+    stopCallRecognition();const call=flow;
+    $('#voiceLayer').dataset.phase='listening';$('#voiceQuestion').hidden=false;$('#voiceInput').hidden=false;
+    const retry=$('#voiceListen');retry.hidden=false;retry.style.display='block';retry.disabled=false;retry.textContent='开始说话';retry.onclick=()=>{if(flow!==call||call.paused||camera)return;call.mic=true;callButtons();voiceToText(done)};
+    phase('等待您的回答');$('#voiceTranscript').textContent='可以语音回答，也可以输入文字。';
+    if(!call.mic){$('#voiceStatus').textContent='麦克风已关闭，点击“开始说话”开启，或输入回答。';return}
     const R=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!R){phase('请在下方输入回答');$('#voiceStatus').textContent='当前浏览器不支持语音识别，请输入回答';flow.mic=false;callButtons();return}
-    stopCallRecognition();const r=new R(),call=flow;rec=r;r.lang='zh-CN';r.interimResults=false;
-    r.onresult=e=>{if(flow!==call||call.paused||camera)return;done(e.results[0][0].transcript)};
-    r.onerror=()=>{if(flow!==call)return;call.mic=false;callButtons();$('#voiceStatus').textContent='未能识别语音，请输入回答或再次打开麦克风'};
-    r.onend=()=>{if(rec===r)rec=null};try{r.start()}catch{call.mic=false;callButtons();$('#voiceStatus').textContent='麦克风暂不可用，请输入回答'};
+    if(!R){call.mic=false;callButtons();$('#voiceStatus').textContent=recognitionError('unsupported');return}
+    const r=new R();rec=r;r.lang='zh-CN';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+    let received=false,failed=false,timer=null;
+    const valid=()=>flow===call&&rec===r&&!call.paused&&!call.finished&&!call.cancelled&&!camera;
+    const clear=()=>{clearTimeout(timer);timer=null};
+    const fail=error=>{if(!valid())return;failed=true;clear();call.mic=false;callButtons();phase('语音暂未接通');$('#voiceTranscript').textContent='本题尚未提交，可以重试语音或输入文字。';$('#voiceStatus').textContent=recognitionError(error);retry.disabled=false;retry.textContent='开始说话'};
+    r.onstart=()=>{if(!valid())return;clear();phase('正在倾听…');$('#voiceStatus').textContent='请说出您的回答';$('#voiceTranscript').textContent='助手正在倾听您的回答…';retry.disabled=true;retry.textContent='正在倾听…';timer=setTimeout(()=>{if(valid()){fail('timeout');stopCallRecognition()}},30000)};
+    r.onresult=e=>{if(!valid()||failed||received)return;let draft='';for(let i=e.resultIndex||0;i<e.results.length;i++){const result=e.results[i],text=result[0]?.transcript?.trim();if(!text)continue;if(result.isFinal){received=true;clear();stopCallRecognition();done(text);return}draft+=text}if(draft)$('#voiceTranscript').textContent='正在识别：'+draft};
+    r.onerror=e=>{fail(e.error)};
+    r.onend=()=>{clear();if(!valid())return;rec=null;if(received||failed)return;call.mic=false;callButtons();phase('等待您的回答');$('#voiceStatus').textContent=recognitionError('no-speech');$('#voiceTranscript').textContent='本题尚未提交。';retry.disabled=false;retry.textContent='开始说话'};
+    r._clearTimer=clear;$('#voiceStatus').textContent='正在连接麦克风，若出现权限提示请允许。';phase('正在连接语音…');
+    timer=setTimeout(()=>{if(valid()){fail('timeout');stopCallRecognition()}},12000);
+    try{r.start()}catch(e){fail(e.name==='NotAllowedError'?'not-allowed':'start-failed');stopCallRecognition()}
   };
   respond=function(text){
     if(!flow||flow.paused||flow.finished||camera||flow.cancelled||!text.trim())return;
@@ -462,7 +486,7 @@
   };
   $('#callMinimize').onclick=()=>{$('#voiceLayer').classList.add('minimized');$('#callRestore').hidden=false};
   $('#callRestore').onclick=()=>{$('#voiceLayer').classList.remove('minimized');$('#callRestore').hidden=true};
-  $('#callMic').onclick=()=>{if(!flow||camera||flow.paused)return;flow.mic=!flow.mic;callButtons();if(!flow.mic)stopCallRecognition();else if($('#voiceLayer').dataset.phase==='listening')voiceToText(respond)};
+  $('#callMic').onclick=()=>{if(!flow||camera||flow.paused)return;flow.mic=!flow.mic;callButtons();if(!flow.mic){stopCallRecognition();if($('#voiceLayer').dataset.phase==='listening')voiceToText(respond)}else if($('#voiceLayer').dataset.phase==='listening')voiceToText(respond)};
   $('#callSpeaker').onclick=()=>{if(!flow)return;flow.silent=!flow.silent;window.TangTTS.setMuted?.(flow.silent);callButtons();toast(flow.silent?'已关闭播报声音':'已打开播报声音')};
   $('#callPause').onclick=()=>{
     if(!flow)return;flow.paused=!flow.paused;callButtons();

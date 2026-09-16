@@ -12,3 +12,5 @@
 @media(max-width:375px){#home .home-hello h1{font-size:22px}#home .home-topbar{margin-bottom:23px}#home .home-alert{margin-bottom:20px}.home-course-head h2{font-size:15px}.home-method b{font-size:15px}.home-method{gap:10px}.home-shortcuts button{padding:7px 8px}}
 @media(max-height:720px){#home{padding-top:calc(14px + env(safe-area-inset-top))}#home .home-topbar{margin-bottom:17px}#home .home-alert{margin-bottom:16px;min-height:65px;padding-top:11px;padding-bottom:11px}#home .home-hello{min-height:104px;margin-bottom:9px}.home-avatar,#home .home-avatar .avatar{height:110px}.home-today{margin-bottom:10px}.home-bottom{padding-top:8px}}
 @media(prefers-reduced-motion:reduce){#home *{scroll-behavior:auto!important}}
+
+#home .home-reset{min-height:44px;padding:0 9px;border:0;border-radius:12px;background:transparent;color:#9b7b66;font-size:12px;white-space:nowrap}#home .home-reset:hover{background:#f7e7dc}.home-utilities{gap:6px}@media(max-width:375px){#home .home-doctor{padding:0 16px}#home .home-reset{padding:0 6px}}
